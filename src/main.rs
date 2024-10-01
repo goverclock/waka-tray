@@ -9,8 +9,8 @@ mod config;
 mod waka_api;
 
 fn main() {
+    env_logger::init();
     let conf = config::init_config();
-
     // tray menu
     let tray_menu = Menu::new();
     let quit_item = MenuItem::new("Quit", true, None);
@@ -43,14 +43,8 @@ fn main() {
     let menu_channel = MenuEvent::receiver();
     let tray_channel = TrayIconEvent::receiver();
     let mut tray_icon = None;
-    let mut cnt = 0;
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
-        cnt += 1;
-        if cnt % 100 == 0 {
-            println!("{}", cnt);
-        }
-        // println!("{:#?}", event);
 
         match event {
             Event::NewEvents(tao::event::StartCause::Init) => {
@@ -101,11 +95,11 @@ fn main() {
                     .spawn()
                     .unwrap();
             }
-            // println!("{event:?}");
+            // info!("{event:?}");
         }
 
         if let Ok(_tray_event) = tray_channel.try_recv() {
-            // println!("{event:?}");
+            // info!("{event:?}");
         }
     })
 }

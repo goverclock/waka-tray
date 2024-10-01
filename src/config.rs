@@ -1,18 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
-use toml;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Config {
     pub api_key: String,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            api_key: String::new(),
-        }
-    }
 }
 
 const CONFIG_FILE_NAME: &str = "waka-tray.toml";
@@ -28,12 +19,14 @@ pub fn init_config() -> Config {
     let path = config_path();
     let _ = fs::File::create_new(&path);
 
+    // if the config file doesn't exist, create it
     let mut conf = read_config(&path);
     if conf.is_err() {
         write_config(&Config::default(), &path).unwrap();
         conf = read_config(&path);
     }
-    println!("read config={:#?}", conf);
+
+    log::info!("read config result={:#?}", conf);
     conf.unwrap()
 }
 

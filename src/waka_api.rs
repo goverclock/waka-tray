@@ -1,4 +1,5 @@
 use core::time;
+use log::{error, info};
 use reqwest::blocking::Client;
 use serde::Deserialize;
 use std::error::Error;
@@ -30,7 +31,7 @@ pub fn start_fetch_loop(proxy: EventLoopProxy<ApiResponse>, api_key: String) {
                 proxy.send_event(response).unwrap();
             }
             Err(e) => {
-                println!("fail to fetch wakatime api, err={e}");
+                error!("fail to fetch wakatime api, err={e}");
             }
         }
         thread::sleep(time::Duration::from_secs(60));
@@ -38,7 +39,7 @@ pub fn start_fetch_loop(proxy: EventLoopProxy<ApiResponse>, api_key: String) {
 }
 
 fn fetch_wakatime(api_key: &str) -> Result<ApiResponse, Box<dyn Error>> {
-    println!("fetching");
+    info!("fetching data from wakatime.com");
     let client = Client::new();
     let url = format!(
         "https://wakatime.com/api/v1/users/current/durations?date={}",
@@ -48,8 +49,10 @@ fn fetch_wakatime(api_key: &str) -> Result<ApiResponse, Box<dyn Error>> {
     let response = client.get(url).basic_auth(api_key, Some("")).send()?;
     if response.status().is_success() {
         let api_response: ApiResponse = response.json()?;
+        info!("fetch succeeded");
         Ok(api_response)
     } else {
+        info!("fetch failed");
         Err(Box::from(response.status().as_str()))
     }
 }
